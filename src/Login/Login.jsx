@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import logo from "../assets/logo/photonic.png";
 import Swal from "sweetalert2";
+import { FiLogIn } from "react-icons/fi";
+
 
 export default function Login() {
   const [isActive, setIsActive] = useState(false);
@@ -16,17 +18,23 @@ export default function Login() {
   const [regEmail, setRegEmail] = useState("");
   const [regPass, setRegPass] = useState("");
 
+  const [loading, setLoading] = useState(false);
+
+
   const navigate = useNavigate();
 
   const { setUsername, setPassword } = useAuth();
 
   const handleLogin = async (e) => {
+    setLoading(true);
+
     e.preventDefault();
     setLoginError(""); // clear old error
 
     // basic validation
     if (!loginUser.trim() || !loginPass.trim()) {
       setLoginError("Enter username and password.");
+      setLoading(false);
       return;
     }
 
@@ -50,7 +58,9 @@ export default function Login() {
       if (!res.ok) {
         // show FB-style inline message instead of alert
         setLoginError("Username or password incorrect");
+        setLoading(false);
         return;
+
       }
 
       // success
@@ -85,6 +95,8 @@ export default function Login() {
         text: "Server not reachable. Please try again.",
       });
     }
+    setLoading(false);
+
   };
 
   const handleRegister = (e) => {
@@ -202,7 +214,7 @@ export default function Login() {
                 className="w-32 sm:w-36 md:w-40 h-auto"
               />
 
-              <h1 className="font-bold text-[#01a0e2] tracking-wide
+              <h1 className=" font-bold text-[#01a0e2] tracking-wide
                             text-lg sm:text-xl md:text-2xl">
                 Aqua Farming
               </h1>
@@ -255,12 +267,30 @@ export default function Login() {
               </div>
             </div>
 
-            <button
+            {/* <button
               type="submit"
               className="mt-7 w-[150px] py-2 rounded-full bg-[#01a0e2] text-white hover:bg-[#4664d7] transition"
             >
               Login
-            </button>
+            </button> */}
+            <button
+                type="submit"
+                disabled={loading}
+                className="mt-7 w-[150px] py-2 rounded-full bg-[#01a0e2] text-white hover:bg-[#4664d7] transition flex items-center justify-center gap-2 disabled:opacity-70"
+              >
+                {loading ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    Logging...
+                  </>
+                ) : (
+                  <>
+                    <FiLogIn size={16} />
+                    Login
+                  </>
+                )}
+              </button>
+
           </form>
 
           {/* REGISTER FORM */}

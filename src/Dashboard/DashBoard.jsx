@@ -1060,3 +1060,211 @@ function describeSemiCirclePath(radius) {
   const x2 = 2 * r;
   return `M ${x1} ${y} A ${r} ${r} 0 0 1 ${x2} ${y}`;
 }
+
+
+
+
+
+// return (
+//   <div className="relative min-h-screen px-4 sm:px-6 lg:px-10 py-6">
+//     <div>
+//       <TestController controllerId={id} controllerName={name} />
+//     </div>
+
+//     <div>
+//       {showMultiSetting && (
+//         <MultiSettingManager
+//           settings={settingsList}
+//           updateSettings={(newArr) => {
+//             const re = reindex(newArr || []);
+//             setSettingsList(re);
+//             setSelectedSetting(null);
+//             setIsEditing(false);
+//             if (!re.length) setShowMultiSetting(false);
+//           }}
+//           onClose={() => setShowMultiSetting(false)}
+//           lastSetting={lastSettingDate}
+//         />
+//       )}
+//     </div>
+
+//     <div className="relative z-10 flex justify-center px-2 sm:px-6 py-6">
+//       <div className="w-full max-w-[1000px] bg-white backdrop-blur-md rounded-2xl shadow-xl border border-white/30 p-4 sm:p-6 transition-all">
+
+//         {/* Header */}
+//         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+//           <h2 className="text-xl sm:text-2xl font-semibold text-center md:text-left">
+//             Feeder Dashboard
+//           </h2>
+
+//           <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full md:w-auto">
+//             <div className="w-full sm:w-auto">
+//               <select
+//                 className={`w-full px-3 py-2 border rounded-md ${
+//                   blinkLoop ? "blink-loop" : ""
+//                 }`}
+//                 value={selectedSettingStr}
+//                 onChange={(e) => {
+//                   const idVal =
+//                     e.target.value === "" ? null : Number(e.target.value);
+//                   setSelectedSetting(idVal);
+//                   setIsEditing(false);
+//                 }}
+//               >
+//                 <option value="">-- New --</option>
+//                 {settingsList.map((s) => (
+//                   <option key={s.id} value={s.id}>
+//                     {s.label}
+//                   </option>
+//                 ))}
+//               </select>
+//             </div>
+
+//             <div className="flex flex-wrap items-center gap-2 justify-center sm:justify-start">
+//               <button
+//                 onClick={() => {
+//                   if (!selectedSetting) {
+//                     showToast(
+//                       "error",
+//                       "Select a saved setting from dropdown to edit it."
+//                     );
+//                     return;
+//                   }
+//                   setIsEditing(true);
+//                 }}
+//                 className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
+//                   isEditing
+//                     ? "bg-gray-200 text-black"
+//                     : "text-black hover:bg-orange-300"
+//                 }`}
+//               >
+//                 <FiEdit size={18} />
+//                 Edit
+//               </button>
+
+//               {isEditing && (
+//                 <>
+//                   <button
+//                     onClick={saveEditedSetting}
+//                     className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+//                   >
+//                     Save
+//                   </button>
+//                   <button
+//                     onClick={cancelEdit}
+//                     className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-black rounded-lg hover:bg-gray-300"
+//                   >
+//                     Cancel
+//                   </button>
+//                 </>
+//               )}
+
+//               <button
+//                 onClick={handleSet}
+//                 className="flex items-center gap-2 px-4 py-2 text-black rounded-lg hover:bg-green-500 transition"
+//               >
+//                 Set
+//               </button>
+//             </div>
+//           </div>
+//         </div>
+
+//         {/* Row 1 */}
+//         <div className="grid grid-cols-12 gap-4 items-center mb-6">
+//           <div className="col-span-12 sm:col-span-6 lg:col-span-3 p-3.5 bg-white/60 rounded-lg border border-white/40 flex flex-col gap-3 transition-transform hover:scale-[1.01]">
+//             <div className="flex items-center justify-between">
+//               <label className="text-sm font-medium text-gray-700">
+//                 Start Time
+//               </label>
+//               <div className="text-xs text-gray-500">Local</div>
+//             </div>
+
+//             <input
+//               type="time"
+//               value={startTime}
+//               onChange={(e) => {
+//                 const val = e.target.value;
+//                 setStartTime(val);
+//                 if (isEditing && selectedSetting)
+//                   updateCurrentSettingInSaved("startTime", val);
+//               }}
+//               className="px-3 py-2 rounded-md border w-full"
+//               disabled={!!selectedSetting && !isEditing}
+//             />
+//           </div>
+
+//           <div className="col-span-12 sm:col-span-6 lg:col-span-3 p-4 bg-white/60 rounded-lg border border-white/40 flex flex-col gap-3 transition-transform hover:scale-[1.01]">
+//             <label className="text-sm font-medium text-gray-700">
+//               Feeding Level (KG)
+//             </label>
+
+//             <div className="flex gap-3 items-center">
+//               <input
+//                 type="number"
+//                 min="0"
+//                 max={gaugeMaxKg}
+//                 value={feedLevel}
+//                 onChange={(e) => {
+//                   const val = e.target.value;
+//                   setFeedLevel(val);
+//                   if (isEditing && selectedSetting)
+//                     updateCurrentSettingInSaved("feedLevel", val);
+//                 }}
+//                 placeholder={`0 - ${gaugeMaxKg} KG`}
+//                 className="px-3 py-2 rounded-md border w-full"
+//                 disabled={!!selectedSetting && !isEditing}
+//               />
+//               <div className="text-sm text-gray-600">KG</div>
+//             </div>
+//           </div>
+
+//           <div className="col-span-12 sm:col-span-6 lg:col-span-3 p-4 bg-white/60 rounded-lg border border-white/40 flex flex-col gap-3 transition-transform hover:scale-[1.01]">
+//             <div className="flex items-center justify-between">
+//               <label className="text-sm font-medium text-gray-700">
+//                 Dispatch
+//               </label>
+//               <div className="text-xs text-gray-500">Grams</div>
+//             </div>
+
+//             <select
+//               className="px-3 py-2 rounded-md border w-full"
+//               value={dispatch}
+//               onChange={(e) => {
+//                 const val = Number(e.target.value);
+//                 setDispatch(val);
+//                 if (isEditing && selectedSetting)
+//                   updateCurrentSettingInSaved("dispatch", val);
+//               }}
+//               disabled={!!selectedSetting && !isEditing}
+//             >
+//               <option value={250}>250 g (Default)</option>
+//               <option value={500}>500 g</option>
+//             </select>
+//           </div>
+
+//           <div className="col-span-12 sm:col-span-6 lg:col-span-3 p-4 bg-white/60 rounded-lg border border-white/40 flex flex-col gap-3 transition-transform hover:scale-[1.01]">
+//             <div className="flex items-center justify-between">
+//               <label className="text-sm font-medium text-gray-700">
+//                 Time Gap
+//               </label>
+//               <div className="text-xs text-gray-500">Interval</div>
+//             </div>
+
+//             <select
+//               value={timeGap}
+//               onChange={(e) => {
+//                 const val = Number(e.target.value);
+//                 setTimeGap(val);
+//                 if (isEditing && selectedSetting)
+//                   updateCurrentSettingInSaved("timeGap", val);
+//               }}
+//               className="px-3 py-2 rounded-md border w-full"
+//               disabled={!!selectedSetting && !isEditing}
+//             >
+//               <option value={180}>3 minutes (Default)</option>
+//               <option value={240}>4 minutes</option>
+//               <option value={300}>5 minutes</option>
+//               <option value={360}>6 minutes</option>
+//             </select>
+//           </div>
+//         </div>
