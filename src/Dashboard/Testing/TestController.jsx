@@ -55,7 +55,11 @@ export default function TestController({ controllerId ,controllerName}) {
       const a3Value = latest.a3;
 
       // signal
-      setSignalValue(a4Value ? Number(a4Value) : 0);
+      // setSignalValue(a4Value ? Number(a4Value) : 0);
+      // signal - update ONLY if a4 exists
+      if (a4Value !== undefined && a4Value !== null && a4Value !== "") {
+        setSignalValue(Number(a4Value));
+      }
 
       // time
       let formatted = formatA3DateTime(a3Value);
