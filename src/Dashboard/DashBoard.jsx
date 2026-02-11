@@ -539,7 +539,7 @@ const handleSet = async () => {
 // Read PREVIOUS settings from controller
 const handlePreviousSet = async () => {
   try {
-    const res = await api.get(`/controller/${id}/last-setting`);
+    const res = await api.get(`https://psdas-aqua-farming.onrender.com/controller/${id}/last-setting`);
     const ack = res.data?.sent_settings || "";
 
     setCurrentAck(ack);

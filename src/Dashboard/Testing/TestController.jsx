@@ -39,7 +39,7 @@ export default function TestController({ controllerId ,controllerName}) {
   const pullStatus = async (id, { updateMsg = false } = {}) => {
     if (!id) return;
     try {
-      const res = await api.get(`/controller/${id}/telemetry?limit=1`);
+      const res = await api.get(`https://psdas-aqua-farming.onrender.com/controller/${id}/telemetry?limit=1`);
       // console.log("telemetryjjjjjjjjjjjjj", res.data);
 
       const items = res.data?.items || [];
