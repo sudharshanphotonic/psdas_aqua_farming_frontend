@@ -44,7 +44,7 @@ export default function Controller() {
     setError("");
 
     try {
-      const res = await axios.post("http://localhost:8000/login", {
+      const res = await axios.post("https://psdas-aqua-farming.onrender.com/login", {
         username: u,
         password: p,
       });
@@ -95,7 +95,7 @@ export default function Controller() {
 
     try {
       await axios.post(
-        `http://localhost:8000/controller/${ctrl.id}/rename`,
+        `https://psdas-aqua-farming.onrender.com/controller/${ctrl.id}/rename`,
         { name: value },
         { headers: { Authorization: localStorage.getItem("token") } }
       );
