@@ -2,32 +2,117 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
+/* ---------- Global base ---------- */
+
+html,
+body,
+#root {
   margin: 0;
   padding: 0;
-  font-family: sans-serif;
+  height: 100%;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Poppins",
+    "Segoe UI", sans-serif;
   position: relative;
   min-height: 100vh;
   overflow-x: hidden;
+  background-color: #0b1724; /* fallback if image fails */
 }
 
-/* Background layer */
+/* ---------- Background layer ---------- */
+
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   width: 100%;
   height: 100%;
-  background-image: url('./assets/Aqua_farming.jpg');
+
+  /* make sure path is correct relative to this file */
+  background-image: url("./assets/Aqua_farming.jpg");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
 
-  /* Same visual settings as your React component */
   opacity: 0.9;
-  filter: brightness(0.8);
+  filter: brightness(0.78) saturate(0.95);
 
   z-index: -1;
 }
+
+/* On mobile, fixed backgrounds can be janky. */
+@media (max-width: 768px) {
+  body::before {
+    background-attachment: scroll;
+    filter: brightness(0.8);
+  }
+}
+
+/* ---------- Reusable “glass” cards ---------- */
+
+/* Main panels (like Feeder Dashboard, login card, controller bar) */
+.glass-card {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-radius: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+}
+
+/* Slightly lighter version for small status bars / headers */
+.glass-card-soft {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.14);
+}
+
+/* You can apply these in JSX like:
+   <div className="glass-card p-6">...</div>
+   <div className="glass-card-soft px-4 py-3">...</div>
+*/
+
+/* ---------- Animations ---------- */
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.25s ease-out;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20%,
+  60% {
+    transform: translateX(-4px);
+  }
+  40%,
+  80% {
+    transform: translateX(4px);
+  }
+}
+
+.animate-shake {
+  animation: shake 0.25s ease-in-out;
+}
+
+
 

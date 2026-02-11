@@ -1,837 +1,4 @@
-// import React, { useEffect, useMemo, useState } from "react";
-// import aquafarming from "../assets/Aqua_farming.jpg";
-// import axios from "axios";
-// import TestController from "./Testing/TestController";
-// import { useLocation } from "react-router-dom";
-// import { FiEdit, FiRefreshCcw } from "react-icons/fi";
-// import api from "../api/axios.js"
-// import MultiSettingManager from "./MultiSetting/MultiSettingManager.jsx";
-
-// /**
-//  * Dashboard.jsx
-//  * - Layout B (gauge in center of row 2)
-//  * - Semi-circle gauge (animated)
-//  * - Live clock widget
-//  * - Full width glass panel centered over a full-screen background image
-//  *
-//  * Background image path used from uploaded assets:
-//  * /mnt/data/3f60aabc-5864-49be-9ce0-065d24711344.png
-//  *
-//  * Replace bgImage variable if you want another image.
-//  */
-
-// export default function Dashboard() {
-//   // data state
-  
-//   const [startTime, setStartTime] = useState("");
-//   const [endTime, setEndTime] = useState("");
-//   const [runForValue, setRunForValue] = useState(""); // number
-//   const [runForUnit, setRunForUnit] = useState("sec"); // sec|min|hr
-//   const [feedLevel, setFeedLevel] = useState(""); // KG
-//   const [timeGap, setTimeGap] = useState(180); // seconds default
-//   // const [tags, setTags] = useState([]);
-//   // const [tagInput, setTagInput] = useState("");
-//   const [dispatch, setDispatch] = useState(250);
-//   const [feedDuration, setFeedDuration] = useState("");
-
-//   const [settingsList, setSettingsList] = useState([]);   // Dynamic settings
-//   const addSetting = () => {
-//     const newId = settingsList.length + 1;
-
-//     const newItem = {
-//       id: newId,
-//       label: `Setting ${newId}`,
-//       startTime: "",
-//       endTime: "",
-//       feedLevel: "",
-//       feedDuration: "",
-//     };
-
-//     // Add new item
-//     setSettingsList((prev) => [...prev, newItem]);
-
-//     // Select the newly created setting
-//     setSelectedSetting(newId);
-
-//     // Clear Dashboard fields
-//     setStartTime("");
-//     setEndTime("");
-//     setFeedLevel("");
-//     setFeedDuration("");
-//   };
-
-//   const [selectedSetting, setSelectedSetting] = useState(null);
-//   useEffect(() => {
-//     if (!selectedSetting) return;
-
-//     const selected = settingsList.find(s => s.id === selectedSetting);
-//     if (!selected) return;
-
-//     setStartTime(selected.startTime ?? "");
-//     setEndTime(selected.endTime ?? "");
-//     setFeedLevel(selected.feedLevel ?? "");
-//     setFeedDuration(selected.feedDuration ?? "");
-//   }, [selectedSetting, settingsList]);
-
-
-// const updateCurrentSetting = (field, value) => {
-//   setSettingsList(prev =>
-//     prev.map(s =>
-//       s.id === selectedSetting
-//         ? { ...s, [field]: value }
-//         : s
-//     )
-//   );
-// };
-
-
-
-//   const location = useLocation();
-//   const { id, name, status } = location.state || {}; 
-
-//   // live clock
-//   const [now, setNow] = useState(new Date());
-
-//   // background image (uploaded file path)
-// //   const bgImage = "/mnt/data/3f60aabc-5864-49be-9ce0-065d24711344.png";
-
-
-
-
-// const [showMultiSetting, setShowMultiSetting] = useState(false);
-// const [currentAck, setCurrentAck] = useState(""); // previous ACK from backend
-
-
-
-
-
-//   const fetchSettings = async () => {
-//     try {
-//       const res = await axios.get(`/api/controller/${id}/settings`);
-//       /**
-//        * Assume API returns something like:
-//        * ACK,3,08:00|10:00|15:00
-//        *
-//        * Or JSON:
-//        * { count:3, items:["08:00","10:00","15:00"] }
-//        */
-
-//       const data = res.data;
-
-//       // If ACK string
-//       if (typeof data === "string" && data.startsWith("ACK")) {
-//         const parts = data.split(",");
-//         const count = Number(parts[1]);
-//         const times = parts[2]?.split("|") || [];
-
-//         const formatted = times.map((t, i) => ({
-//           id: i + 1,
-//           label: `Setting ${i + 1}`,
-//           value: t.trim(),
-//         }));
-
-//         setSettingsList(formatted);
-//       }
-
-//       // If JSON
-//       if (data.items) {
-//         const formatted = data.items.map((t, i) => ({
-//           id: i + 1,
-//           label: `Setting ${i + 1}`,
-//           value: t,
-//         }));
-//         setSettingsList(formatted);
-//       }
-
-//     } catch (err) {
-//       console.error("Failed to load settings", err);
-//     }
-//   };
-
-
-//   // ------------ WHEN SETTING SELECTED → LOAD VALUE -----------
-//   useEffect(() => {
-//     if (!selectedSetting) return;
-
-//     const s = settingsList.find((x) => x.id === Number(selectedSetting));
-//     if (!s) return;
-
-//     setStartTime(s.value);
-
-//   }, [selectedSetting]);
-
-
-//   // update clock every second
-//   useEffect(() => {
-//     const t = setInterval(() => setNow(new Date()), 1000);
-//     return () => clearInterval(t);
-//   }, []);
-
-//   // computed seconds (runFor normalized to seconds)
-// // ---- CALCULATIONS ----
-// const totalCycles = useMemo(() => {
-//   if (!feedLevel || !dispatch) return 0;
-//   return Math.floor((Number(feedLevel) * 1000) / Number(dispatch));
-// }, [feedLevel, dispatch]);
-
-// const totalRunningHours = useMemo(() => {
-//   if (!totalCycles || !timeGap) return "0h 0m";
-
-//   // total seconds for all cycles
-//   const totalSeconds = totalCycles * Number(timeGap);
-
-//   // convert to hours + minutes
-//   const hours = Math.floor(totalSeconds / 3600);
-//   const minutes = Math.floor((totalSeconds % 3600) / 60);
-
-//   return `${hours}h ${minutes}m`;
-// }, [totalCycles, timeGap]);
-
-
-//   // gauge parameters
-//   const gaugeMaxKg = 2000; // change this to desired max feeding kg
-//   const feedValueNumber = Number(feedLevel) || 0;
-//   const feedPercent = Math.max(0, Math.min(100, (feedValueNumber / gaugeMaxKg) * 100));
-
-//   // Add tag handler
-//   // const addTag = () => {
-//   //   const t = tagInput.trim();
-//   //   if (!t) return;
-//   //   if (!tags.includes(t)) setTags((s) => [...s, t]);
-//   //   setTagInput("");
-//   // };
-//   // const removeTag = (t) => setTags((s) => s.filter((x) => x !== t));
-//   // const onTagKey = (e) => {
-//   //   if (e.key === "Enter") {
-//   //     e.preventDefault();
-//   //     addTag();
-//   //   }
-//   // };
-
-//   // Set button handler (replace alert with API call)
-// const handleSet = async () => {
-//   try {
-//     // Convert HH:mm → HHMM
-//     const toHHMM = (t) => t.replace(":", "").padStart(4, "0");
-
-//     // Start time (HHMM)
-//     const startHHMM = toHHMM(startTime);
-
-//     // Convert "runForValue" (hours float) → HHMM (duration)
-//     const hoursFloat = Number(runForValue) || 0;
-//     const durHours = Math.floor(hoursFloat);
-//     const durMins = Math.round((hoursFloat - durHours) * 60);
-
-//     // const durationHHMM =
-//     //   String(durHours).padStart(2, "0") +
-//     //   String(durMins).padStart(2, "0");  // e.g. 02:00 → 0200
-
-//     // as1 = startHHMM + durationHHMM
-//     // const as1 = `${startHHMM}${durationHHMM}`;
-//     const as1 = `${startHHMM}`;
-//     let as3 = totalRunningHours;
-
-//     // Extract numbers (hours & minutes)
-//     const [hours, minutes] = as3.match(/\d+/g).map(Number);
-
-//     // Convert to 2-digit padded format
-//     as3 = `${String(hours).padStart(2, "0")}${String(minutes).padStart(2, "0")}`;
-
-//     console.log("Formatted totalRunningHours:", as3); // e.g., "0100"
-
-//     // as2 = quantity (feed level)
-//     const as2 = String(feedLevel).padStart(4, "0");
-
-//     // as4 = time gap
-//     const as4 = String(timeGap).padStart(4, "0");
-
-//     const as9 = dispatch;
-//     const as10 = totalCycles;
-
-
-//     // Build payload
-//     const payload =
-//       `c0=212` +
-//       `&as1=${as1}` +
-//       `&as2=${as2}` +
-//       `&as3=${as3}` +
-//       `&as4=${as4}`+
-//       `&as9=${as9}`+
-//       `&as10=${as10}`
-
-//     console.log("Sending payload:", payload);
-
-//     const res = await api.post(
-//       `/controller/${id}/command`,
-//       { payload }
-//     );
-
-
-//     console.log("SET RESPONSE:", res.data);
-//     alert("Settings applied!");
-
-//   } catch (e) {
-//     console.log("Error sending settings:", e);
-//     alert("Failed to send settings.");
-//   }
-// };
-
-// const handlePreviousSet = async () => {
-//   try {
-//     // 1) Send READ command
-//     await api.post(`/controller/${id}/command`, { payload: "c0=202" });
-
-//     // 2) Wait for controller to respond
-//     await new Promise(r => setTimeout(r, 1500));
-
-//     // 3) Fetch latest ACK
-//     const res = await api.get(`/controller/${id}/status`);
-//     const ack = res.data.ack_payload || res.data.payload || "";
-//     console.log("Previous ACK fetched:", ack);
-
-//     setCurrentAck(ack); // for MultiSettingManager
-//     setShowMultiSetting(true);
-
-//     // 4) Parse ACK for values
-//     const parts = ack.split("&");
-//     const as1 = parts.find(p => p.startsWith("as1="))?.split("=")[1];
-//     const as2 = parts.find(p => p.startsWith("as2="))?.split("=")[1];
-//     const as3 = parts.find(p => p.startsWith("as3="))?.split("=")[1];
-//     const as4 = parts.find(p => p.startsWith("as4="))?.split("=")[1];
-//     const as9 = parts.find(p => p.startsWith("as9="))?.split("=")[1];
-
-//     if (!as1) return;
-
-//     // --- Update Dashboard Inputs ---
-//     const startHHMM = as1.slice(0, 4);
-//     setStartTime(`${startHHMM.slice(0,2)}:${startHHMM.slice(2,4)}`);
-
-//     // Optional: parse duration from as1 slice(4,8)
-//     // const durHHMM = as1.slice(4, 8);
-
-//     setFeedLevel(as2 || "0");
-//     setTimeGap(Number(as4) || 180);
-//     setDispatch(Number(as9) || 250);
-
-//     // 5) Update settings list dropdown (optional: extract multiple settings from payload if available)
-//     // Example: API might return multiple settings as ACK1,ACK2,... in res.data.items
-//     if(res.data.items) {
-//       const formatted = res.data.items.map((t, i) => ({
-//         id: i + 1,
-//         label: `Setting ${i + 1}`,
-//         value: t,
-//       }));
-//       setSettingsList(formatted);
-//       setSelectedSetting(formatted[0]?.id || null); // auto select first
-//     }
-
-//   } catch (err) {
-//     console.error("Failed to fetch previous settings:", err);
-//     alert("Could not fetch previous settings from controller.");
-//   }
-// };
-
-
-
-
-// // const handlePreviousSet = async () => {
-// //   try {
-// //     // Use READ command (important!)
-// //     const readPayload = "c0=202";
-
-// //     const res = await api.post(
-// //       `/controller/${id}/command`,
-// //       { payload: readPayload }
-// //     );
-
-// //     console.log("Previous setting response:", res.data);
-
-// //     const ack = res.data.ack_payload || "";
-// //     const parts = ack.split("&");
-
-// //     // Extract values
-// //     const as1 = parts.find((p) => p.startsWith("as1="))?.split("=")[1];
-// //     const as2 = parts.find((p) => p.startsWith("as2="))?.split("=")[1];
-// //     const as3 = parts.find((p) => p.startsWith("as3="))?.split("=")[1];
-// //     const as4 = parts.find((p) => p.startsWith("as4="))?.split("=")[1];
-
-// //     if (!as1) {
-// //       console.log("No previous setting found");
-// //       return;
-// //     }
-
-// //     // -----------------------------
-// //     // PARSE AS1 → start + duration
-// //     // -----------------------------
-// //     const startHHMM = as1.slice(0, 4);    // "1100"
-// //     const durHHMM   = as1.slice(4, 8);    // "0500"
-
-// //     const toTime = (hhmm) =>
-// //       hhmm.slice(0, 2) + ":" + hhmm.slice(2, 4);
-
-// //     const startFormatted = toTime(startHHMM);
-
-// //     // Convert duration → end time
-// //     const sh = Number(startHHMM.slice(0, 2));
-// //     const sm = Number(startHHMM.slice(2, 4));
-// //     const dh = Number(durHHMM.slice(0, 2));
-// //     const dm = Number(durHHMM.slice(2, 4));
-
-// //     let endH = sh + dh;
-// //     let endM = sm + dm;
-
-// //     if (endM >= 60) {
-// //       endM -= 60;
-// //       endH += 1;
-// //     }
-// //     if (endH >= 24) endH -= 24;
-
-// //     const endFormatted =
-// //       String(endH).padStart(2, "0") + ":" + String(endM).padStart(2, "0");
-
-// //     // Duration in hours (float)
-// //     const runHours = (dh + dm / 60).toFixed(2);
-
-// //     // -----------------------------
-// //     // UPDATE UI
-// //     // -----------------------------
-// //     setStartTime(startFormatted);
-// //     setEndTime(endFormatted);
-// //     setRunForValue(runHours);
-// //     setRunForUnit("hr");
-// //     setFeedLevel(as2 || "0000");
-// //     setTimeGap(as4 || "0000");
-
-// //     // -----------------------------
-// //     // Rebuild EXACT SAME PAYLOAD
-// //     // -----------------------------
-// //     const rebuiltPayload =
-// //       `c0=212` +
-// //       `&as1=${as1}` +
-// //       `&as2=${as2}` +
-// //       `&as3=${as3}` +
-// //       `&as4=${as4}`;
-
-// //     console.log("Rebuilt previous payload:", rebuiltPayload);
-
-// //   } catch (e) {
-// //     console.log("Error reading previous setting:", e);
-// //   }
-// // };
-
-
-
-
-//   // --- Semi-circle gauge math (SVG)
-//   // We'll draw an arc from left (-180deg) to right (0deg) as a semicircle.
-//   // Use stroke-dasharray animation to fill.
-//   const gaugeRadius = 90; // px
-//   const gaugeCirc = Math.PI * gaugeRadius; // semicircle circumference (πr)
-//   const gaugeOffset = (1 - feedPercent / 100) * gaugeCirc; // stroke-dashoffset
-
-//   // needle rotation: -90 deg (left) to +90 deg (right)
-//   const needleAngle = -90 + (feedPercent / 100) * 180;
-
-//   // small helper for formatted clock
-//   const formatClock = (d) =>
-//     d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-
-
-//   // console.log("controller.id",id)
-
-//   return (
-    
-//     <div className="relative min-h-screen px-10">
-//       {/* Background image with overlay */}
-//       {/* <div
-//         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-//         style={{
-//           backgroundImage: `url(${aquafarming})`,
-//           opacity: 0.90,
-//           filter: "brightness(0.8)",
-//           backgroundAttachment: "fixed"
-//         }}
-//       /> */}
-//       {/* <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/30" /> */}
-//       <div>
-//         <TestController controllerId={id}/>
-//       </div>
-
-//       {/* Main centered glass container (full-width but limited max-width) */}
-//       <div className="relative z-10 flex justify-center px-6 py-6">
-//         <div className="w-full max-w-[1000px] bg-white backdrop-blur-md rounded-2xl shadow-xl border border-white/30 p-6 transition-all ">
-//           {/* Header */}
-//           {/* <div className="flex items-center justify-center mb-6">
-//             <h2 className="text-2xl font-bold">Feeder Dashboard</h2> */}
-//             {/* <div className="text-sm text-gray-600">Live: {formatClock(now)}</div> */}
-//           {/* </div> */}
-//           {/* Header */}
-//           <div className="flex items-center justify-between mb-6">
-//             <h2 className="text-2xl font-semibold">Feeder Dashboard</h2>
-
-//             <div className="flex items-center gap-3">
-//                   {/* SETTINGS DROPDOWN */}
-//                   <div>
-//                     {/* <label className="font-semibold text-gray-700">Select Setting</label> */}
-//                    <select
-//                       className="w-full px-3 py-2 border rounded-md"
-//                       value={String(selectedSetting ?? "")}
-//                       onChange={(e) => {
-//                         const id = Number(e.target.value);
-//                         setSelectedSetting(id);
-
-//                         // load the selected setting
-//                         const selected = settingsList.find(s => s.id === id);
-//                         if (selected) {
-//                           setStartTime(selected.startTime);
-//                           setEndTime(selected.endTime);
-//                           setFeedLevel(selected.feedLevel);
-//                           setFeedDuration(selected.feedDuration);
-//                         }
-//                       }}
-//                     >
-//                       <option value="">-- choose --</option>
-
-//                       {settingsList.map((s) => (
-//                         <option key={s.id} value={String(s.id)}>
-//                           {s.label}
-//                         </option>
-//                       ))}
-//                     </select>
-
-
-
-//                   </div>
-
-//               {/* Refresh Button */}
-//               <button
-//                 className="flex items-center gap-2 px-4 py-2 rounded-lg 
-//                           text-gray-700 hover:bg-gray-200 transition"
-//                 onClick={() => handlePreviousSet(id)} 
-//               >
-//                 <FiRefreshCcw size={18} />
-//                 Refresh
-//               </button>
-
-//               {/* Edit Button */}
-//               <button
-//                 className="flex items-center gap-2 px-4 py-2  text-black rounded-lg hover:bg-gray-200 transition"
-//                 onClick={() => handleSet}
-//               >
-//                 <FiEdit size={18} />
-//                 Edit
-//               </button>
-
-//             </div>
-//           </div>
-
-
-//           {/* Row 1: Start Time (clock widget), Run For, Time Gap */}
-//           <div className="grid grid-cols-12 gap-4 items-center mb-6">
-//             {/* Start Time + Live Clock */}
-//             <div className="col-span-12 md:col-span-3 p-3.5 bg-white/60 rounded-lg border border-white/40 flex flex-col gap-3 transition-transform hover:scale-[1.01]">
-//               <div className="flex items-center justify-between">
-//                 <label className="text-sm font-medium text-gray-700">Start Time</label>
-//                 <div className="text-xs text-gray-500">Local</div>
-//               </div>
-
-//               <div className="flex items-center gap-3">
-//                 {/* Clock widget */}
-//                 <div className="flex items-center gap-3">
-//                   {/* <div className="w-14 h-14 rounded-full bg-white shadow flex items-center justify-center"> */}
-//                     {/* Simple analog-like clock SVG */}
-//                     {/* <svg viewBox="0 0 64 64" width="40" height="40" className="animate-spin-slow"> */}
-//                       {/* <circle cx="32" cy="32" r="30" fill="none" stroke="#E2E8F0" strokeWidth="4" /> */}
-//                       {/* small center dot */}
-//                       {/* <circle cx="32" cy="32" r="2.5" fill="#5874dc" /> */}
-//                       {/* hour/min/second markers could be added but keep simple */}
-//                     {/* </svg> */}
-//                   {/* </div> */}
-//                   <div className="flex flex-col">
-//                     <input
-//                       type="time"
-//                       value={startTime}
-//                       onChange={(e) => setStartTime(e.target.value)}
-//                       className="px-3 py-2 rounded-md border w-40"
-//                     />
-//                     {/* <div className="text-xs text-gray-500 mt-1">Real time clock: {formatClock(now)}</div> */}
-//                   </div>
-//                 </div>
-//               </div>
-//             </div>
-
-//             {/* Run For */}
-//             <div className="col-span-12 md:col-span-3 p-4 bg-white/60 rounded-lg border border-white/40 flex flex-col gap-3 transition-transform hover:scale-[1.01]">
-//                 <div className="flex items-center justify-between">
-//                   {/* <label className="text-sm font-medium text-gray-700">Run For</label>
-//                   <div className="text-xs text-gray-500">Duration (Hours Only)</div>
-//                 </div>
-
-//                 <div className="flex gap-3 items-center">
-//                   <input
-//                     type="number"
-//                     min="0"
-//                     value={runForValue}
-//                     onChange={(e) => setRunForValue(e.target.value)}
-//                     placeholder="Enter hours"
-//                     className="px-3 py-2 rounded-md border w-full"
-//                   /> */}
-
-//                   {/* Removed sec/min/hr dropdown -> now only hours */}
-//                   {/* <div className="text-sm text-gray-600">hrs</div> */}
-
-
-
-
-//                   <label className="text-sm font-medium text-gray-700">Feeding Level (KG)</label>
-//                   {/* <div className="text-xs text-gray-500">Duration (Hours Only)</div> */}
-//                 </div>
-
-//                 <div className="flex gap-3 items-center ">
-//                   <input
-//                     type="number"
-//                     min="0"
-//                     max={gaugeMaxKg}
-//                     value={feedLevel}
-//                     onChange={(e) => setFeedLevel(e.target.value)}
-//                     placeholder={`0 - ${gaugeMaxKg} KG`}
-//                     className="px-3 py-2 rounded-md border w-full"
-//                   />
-
-//                   {/* Removed sec/min/hr dropdown -> now only hours */}
-//                   <div className="text-sm text-gray-600">KG</div>
-//                 </div>
-//               </div>
-//                {/* Dispatch Amount */}
-//               <div className="col-span-12 md:col-span-3 p-4 bg-white/60 rounded-lg border border-white/40 flex flex-col gap-3 transition-transform hover:scale-[1.01]">
-//                 <div className="flex items-center justify-between">
-//                   <label className="text-sm font-medium text-gray-700">Dispatch</label>
-//                   <div className="text-xs text-gray-500">Grams</div>
-//                 </div>
-
-//                   <select
-//                     className="px-3 py-2 rounded-md border w-full text-gray-700"
-//                     value={dispatch}
-//                     onChange={(e) => setDispatch(e.target.value)}
-//                   >
-//                     {/* <option value="">Select Dispatch</option> */}
-//                     <option value="0250">250 g (Default)</option>
-//                     <option value="0500">500 g</option>
-//                   </select>
-//                 </div>
-
-
-              
-
-
-//             {/* Time Gap */}
-//             <div className="col-span-12 md:col-span-3 p-4 bg-white/60 rounded-lg border border-white/40 flex flex-col gap-3 transition-transform hover:scale-[1.01]">
-//               <div className="flex items-center justify-between">
-//                 <label className="text-sm font-medium text-gray-700">Time Gap</label>
-//                 <div className="text-xs text-gray-500">Interval</div>
-//               </div>
-
-//               <select
-//                 value={timeGap}
-//                 onChange={(e) => setTimeGap(Number(e.target.value))}
-//                 className="px-3 py-2 rounded-md border w-full"
-//               >
-//                 <option value={180}>3 minutes (Default)</option>
-//                 <option value={240}>4 minutes </option>
-//                 <option value={300}>5 minutes </option>
-//                 <option value={360}>6 minutes</option>
-//               </select>
-
-//               {/* <div className="text-sm text-gray-500">Default 180s</div> */}
-//             </div>
-//           </div>
-
-//           {/* Row 2: Gauge center + Feeding level + Total Hours + Tags + Set button */}
-//           <div className="grid grid-cols-12 gap-3 items-center">
-//             {/* Left spacer / feeding level input */}
-//             <div className="col-span-12 md:col-span-3 p-4 bg-white/60 rounded-lg border border-white/40 flex flex-col gap-3 transition-transform hover:scale-[1.01]">
-//               <label className="text-sm font-medium text-gray-700">Total Cycles</label>
-//               <input
-//                 type="text"
-//                 readOnly
-//                 value={totalCycles ? totalCycles : ""}
-                
-//                 className="px-3 py-2 rounded-md border bg-gray-100"
-//               />
-//               <div className="text-xs text-gray-500">Auto-calculated</div>
-
-//               {/* tags */}
-//               {/* <div className="mt-3"> */}
-//                 {/* <label className="text-sm text-gray-600">Tags</label>
-//                 <div className="flex gap-2 mt-2">
-//                   <input
-//                     value={tagInput}
-//                     onChange={(e) => setTagInput(e.target.value)}
-//                     onKeyDown={onTagKey}
-//                     placeholder="add tag + Enter"
-//                     className="px-2 py-1 border rounded"
-//                   />
-//                   <button onClick={addTag} className="px-3 py-1 bg-[#5874dc] text-white rounded">Add</button>
-//                 </div> */}
-
-//                 {/* <div className="flex flex-wrap gap-2 mt-2">
-//                   {tags.map((t) => (
-//                     <div key={t} className="flex items-center gap-2 bg-white px-2 py-1 rounded-full border">
-//                       <span className="text-sm">{t}</span>
-//                       <button onClick={() => removeTag(t)} className="text-xs text-red-500">×</button>
-//                     </div>
-//                   ))}
-//                 </div> */}
-//               {/* </div> */}
-//             </div>
-
-//             {/* Center gauge */}
-//             <div className="col-span-12 md:col-span-6 flex justify-center p-4">
-//               <div className="bg-white/60 rounded-lg border border-white/40 p-6 w-full max-w-md flex flex-col items-center transition-transform hover:scale-[1.01]">
-//                 <div className="w-full flex justify-center mb-3">
-//                   {/* Semi-circle gauge (SVG) */}
-//                   <svg
-//                     width={gaugeRadius * 2 + 20}
-//                     height={gaugeRadius + 40}
-//                     viewBox={`0 0 ${gaugeRadius * 2 + 20} ${gaugeRadius + 40}`}
-//                     className="overflow-visible"
-//                   >
-//                     <defs>
-//                       <linearGradient id="g1" x1="0" x2="1">
-//                         <stop offset="0%" stopColor="#66b3ff" />
-//                         <stop offset="100%" stopColor="#5874dc" />
-//                       </linearGradient>
-//                     </defs>
-
-//                     {/* background arc (light) */}
-//                     <path
-//                       d={describeSemiCirclePath(gaugeRadius)}
-//                       fill="none"
-//                       stroke="#e6e7ee"
-//                       strokeWidth="16"
-//                       strokeLinecap="round"
-//                       transform={`translate(10,10)`}
-//                     />
-
-//                     {/* foreground arc (animated) */}
-//                     <path
-//                       d={describeSemiCirclePath(gaugeRadius)}
-//                       fill="none"
-//                       stroke="url(#g1)"
-//                       strokeWidth="16"
-//                       strokeLinecap="round"
-//                       transform={`translate(10,10)`}
-//                       strokeDasharray={gaugeCirc}
-//                       strokeDashoffset={gaugeOffset}
-//                       style={{ transition: "stroke-dashoffset 800ms ease" }}
-//                     />
-
-//                     {/* needle pivot / rotate */}
-//                     <g transform={`translate(${gaugeRadius + 10}, ${gaugeRadius + 10})`}>
-//                       <line
-//                         x1="0"
-//                         y1="0"
-//                         x2="0"
-//                         y2={-gaugeRadius + 8}
-//                         stroke="#222"
-//                         strokeWidth="2.5"
-//                         strokeLinecap="round"
-//                         transform={`rotate(${needleAngle})`}
-//                         style={{ transition: "transform 800ms ease" }}
-//                       />
-//                       <circle r="4" fill="#222" />
-//                     </g>
-
-//                     {/* value text below arc inside SVG */}
-//                     <text
-//                       x={(gaugeRadius + 10)}
-//                       y={gaugeRadius + 32}
-//                       textAnchor="middle"
-//                       fontSize="14"
-//                       fill="#333"
-//                     >
-//                       {feedValueNumber} KG
-//                     </text>
-//                   </svg>
-//                 </div>
-
-//                 <div className="text-sm text-gray-600">Feeding Level</div>
-//                 <div className="text-lg font-semibold mt-2">{feedValueNumber} / {gaugeMaxKg} KG</div>
-//                 <div className="text-xs text-gray-500 mt-1">Animated semi-circle gauge</div>
-//               </div>
-//             </div>
-
-//             {/* Right column: Total Hours and Set button */}
-//             <div className="col-span-12 md:col-span-3 p-4 bg-white/60 rounded-lg border border-white/40 flex flex-col gap-3 transition-transform hover:scale-[1.01]">
-//                 <label className="text-sm font-medium text-gray-700">Total Running Hours</label>
-
-//                 <input
-//                   type="text"
-//                   readOnly
-//                   value={totalRunningHours ? totalRunningHours : ""}
-//                   className="px-3 py-2 rounded-md border bg-gray-100"
-//                 />
-
-//   <div className="text-xs text-gray-500">Based on cycle × time gap</div>
-//               <div className="mt-auto">
-//                 <button
-//                   onClick={() => handleSet(id)} 
-//                   className="w-full bg-blue-700 text-white p-3 rounded-lg font-medium hover:bg-[#405ed0] transition"
-//                 >
-//                   Set
-//                 </button>
-//                 <button
-//                   // onClick={() => setShowMultiSetting(true)}
-//                   onClick={addSetting}
-//                   className="px-4 py-2 mt-10 bg-green-600 text-white rounded-lg hover:bg-green-700"
-//                 >
-//                   Add Setting
-//                 </button>
-
-//               </div>
-//             </div>
-//           </div>
-
-//           {/* Footer small help text */}
-//           <div className="mt-6 text-sm text-gray-500">
-//             Tip: use the Run For unit selector to enter seconds/minutes/hours. Time Gap defaults to 180 seconds.
-//           </div>
-//         </div>
-//       </div>
-//       <div>
-//         {showMultiSetting && (
-//           <MultiSettingManager
-//             previousAck={settingsList}   // Pass previous settings
-//             updateSettings={setSettingsList}
-//             onClose={() => setShowMultiSetting(false)}
-//           />
-//         )}
-
-//       </div>
-//     </div>
-//   );
-// }
-
-// /* ---------- small helper to create a semicircle path for given radius ---------- */
-// /* returns an SVG path string centered properly for our usage */
-// function describeSemiCirclePath(radius) {
-//   // We will produce a semicircle path from left to right with center at (radius, radius)
-//   // but because we translate the entire path by (10,10) outside, we can draw from (0, radius) to (2r, radius)
-//   // using arc: M 0,r A r,r 0 0 1 2r,r
-//   const r = radius;
-//   const x1 = 0;
-//   const y = r;
-//   const x2 = 2 * r;
-//   return `M ${x1} ${y} A ${r} ${r} 0 0 1 ${x2} ${y}`;
-// }
-
-
-
-
-
-
-
-
+// ===================== PART 1 START =====================
 
 import React, { useEffect, useMemo, useState } from "react";
 import aquafarming from "../assets/Aqua_farming.jpg";
@@ -841,362 +8,494 @@ import { useLocation } from "react-router-dom";
 import { FiEdit, FiRefreshCcw } from "react-icons/fi";
 import api from "../api/axios.js";
 import MultiSettingManager from "./MultiSetting/MultiSettingManager.jsx";
+import Swal from "sweetalert2";
 
-/**
- * Dashboard.jsx — adds Edit -> Save/Cancel flow for rewriting existing saved settings.
- * Layout and styles kept exactly as before.
- */
+/* Full Version B:
+   - Universal validation logic
+   - Overlap checking
+   - Duplicate checking
+   - Edit/Save/Cancel protection
+   - Set cleanup logic
+*/
 
 export default function Dashboard() {
-  // inputs
+
+  // Toast generator
+  const toast = Swal.mixin({
+    toast: true,
+    position: "top-end",
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+    didOpen: (t) => {
+      t.addEventListener("mouseenter", Swal.stopTimer);
+      t.addEventListener("mouseleave", Swal.resumeTimer);
+    },
+  });
+
+  const showToast = (type = "info", title = "", text = "") => {
+    toast.fire({ icon: type, title, text: text || undefined });
+  };
+
+  // -----------------------
+  // STATES
+  // -----------------------
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
-  const [runForValue, setRunForValue] = useState("");
-  const [runForUnit, setRunForUnit] = useState("sec");
   const [feedLevel, setFeedLevel] = useState("");
   const [timeGap, setTimeGap] = useState(180);
   const [dispatch, setDispatch] = useState(250);
   const [feedDuration, setFeedDuration] = useState("");
-  const [refreshing, setRefreshing] = useState(false);
 
-
-  // saved settings list and selection
   const [settingsList, setSettingsList] = useState([]);
   const [selectedSetting, setSelectedSetting] = useState(null);
-
-  const location = useLocation();
-  const { id } = location.state || {};
-
-  // live clock
-  const [now, setNow] = useState(new Date());
-
-  // multi-setting viewer
-  const [showMultiSetting, setShowMultiSetting] = useState(false);
-  const [currentAck, setCurrentAck] = useState("");
-
-  // EDIT MODE: only allowed when a saved setting is selected via dropdown
   const [isEditing, setIsEditing] = useState(false);
 
-  // Controlled select value (string) to avoid fallback to first option
+  const [showMultiSetting, setShowMultiSetting] = useState(false);
+  const [currentAck, setCurrentAck] = useState("");
+  const [lastSettingDate, setLastSettingDate] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const location = useLocation();
+  const { id, name } = location.state || {};
+
   const selectedSettingStr = selectedSetting ? String(selectedSetting) : "";
 
-  // fetch settings when id available
-  useEffect(() => {
-    if (!id) return;
-    fetchSettings();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  // For blink
+  const [blinkLoop, setBlinkLoop] = useState(false);
 
-  // When a setting is selected, load its data into inputs.
-  // If no selectedSetting -> clear inputs (empty dashboard).
+  // LocalStorage
+  const storageKey = id ? `settings_${id}` : null;
+
+  // -----------------------
+  // HELPER: reindex
+  // -----------------------
+  const reindex = (arr) =>
+    arr.map((s, i) => ({ ...s, id: i + 1, label: `Setting ${i + 1}` }));
+
+  // -----------------------
+  // CLOCK (unchanged)
+  // -----------------------
+  useEffect(() => {
+    const t = setInterval(() => {}, 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  // -----------------------
+  // Inject blink CSS once
+  // -----------------------
+  useEffect(() => {
+    const style = document.createElement("style");
+    style.innerHTML = `
+      @keyframes greenBlinkLoop {
+        0% { box-shadow: 0 0 0 rgba(16,185,129,0); }
+        50% { box-shadow: 0 0 16px rgba(16,185,129,0.95); }
+        100% { box-shadow: 0 0 0 rgba(16,185,129,0); }
+      }
+      .blink-loop {
+        animation: greenBlinkLoop 800ms ease-in-out infinite;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => document.head.removeChild(style);
+  }, []);
+
+  // Blink when list not empty
+  useEffect(() => {
+    setBlinkLoop(settingsList.length > 0);
+  }, [settingsList]);
+
+  // -----------------------
+  // LOAD from localStorage OR from backend
+  // -----------------------
+  // useEffect(() => {
+  //   if (!id) return;
+
+  //   if (storageKey) {
+  //     const raw = localStorage.getItem(storageKey);
+  //     if (raw) {
+  //       try {
+  //         const parsed = JSON.parse(raw);
+  //         if (Array.isArray(parsed) && parsed.length) {
+  //           setSettingsList(parsed);
+  //           return;
+  //         }
+  //       } catch {}
+  //     }
+  //   }
+
+  //   fetchSettings();
+  // }, [id]);
+
+  // Save to localStorage
+  useEffect(() => {
+    if (!storageKey) return;
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(settingsList));
+    } catch {}
+  }, [settingsList, storageKey]);
+
+  // When selecting a saved setting
   useEffect(() => {
     if (!selectedSetting) {
       setStartTime("");
       setEndTime("");
       setFeedLevel("");
       setFeedDuration("");
-      // keep defaults for timeGap/dispatch
-      setIsEditing(false); // ensure edit mode off when selection cleared
-      return;
-    }
-
-    const selected = settingsList.find((s) => s.id === Number(selectedSetting));
-    if (!selected) return;
-
-    // load values from selected setting
-    setStartTime(selected.startTime ?? selected.value ?? "");
-    setEndTime(selected.endTime ?? "");
-    setFeedLevel(selected.feedLevel ?? "");
-    setFeedDuration(selected.feedDuration ?? "");
-    setTimeGap(Number(selected.timeGap ?? 180));
-    setDispatch(Number(selected.dispatch ?? 250));
-    // do not change isEditing here (Edit button controls it)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedSetting, settingsList]);
-
-  // reindex helper to keep ids sequential
-  const reindex = (arr) => arr.map((s, i) => ({ ...s, id: i + 1, label: s.label ?? `Setting ${i + 1}` }));
-
-  // updateCurrentSetting should only change the saved list when in edit mode.
-  // For proper Save/Cancel behavior, we DO NOT mutate settingsList live here.
-  // All changes are only persisted when saveEditedSetting() is called.
-  const updateCurrentSettingInSaved = (field, value) => {
-    if (!selectedSetting) return;
-    if (!isEditing) return;
-    // Intentionally left empty to avoid mutating settingsList before Save.
-    // Keep using local state (setStartTime, setFeedLevel, etc.) for inputs.
-  };
-
-
-  // Add current inputs as a new saved setting (validated/deduped)
-  const addSetting = () => {
-    if (isEditing) {
-      alert("Finish editing (Save/Cancel) before adding a new setting.");
-      return;
-    }
-    if (!startTime) {
-      alert("Please enter a Start Time before adding a setting.");
-      return;
-    }
-
-    const candidate = {
-      startTime: startTime.trim(),
-      feedLevel: String(feedLevel),
-      timeGap: Number(timeGap || 180),
-      dispatch: Number(dispatch || 250),
-    };
-
-    // duplicate check
-    const duplicate = settingsList.find(
-      (s) =>
-        (s.startTime || "") === candidate.startTime &&
-        String(s.feedLevel) === candidate.feedLevel &&
-        Number(s.timeGap || 180) === candidate.timeGap &&
-        Number(s.dispatch || 250) === candidate.dispatch
-    );
-    if (duplicate) {
-      setSelectedSetting(duplicate.id);
-      setShowMultiSetting(true);
-      alert("This exact setting already exists. Selected existing entry.");
-      return;
-    }
-
-    const appended = [
-      ...settingsList,
-      {
-        id: settingsList.length + 1,
-        label: `Setting ${settingsList.length + 1}`,
-        startTime: candidate.startTime,
-        endTime: endTime || "",
-        feedLevel: candidate.feedLevel,
-        timeGap: candidate.timeGap,
-        dispatch: candidate.dispatch,
-        feedDuration: feedDuration || "",
-        value: candidate.startTime,
-      },
-    ];
-
-    const reindexed = reindex(appended);
-    setSettingsList(reindexed);
-
-    // CLEAR UI and selection so dashboard becomes empty after add
-    setSelectedSetting(null);
-    setStartTime("");
-    setEndTime("");
-    setFeedLevel("");
-    setFeedDuration("");
-
-    // open MultiSettingManager so user verifies saved settings
-    setShowMultiSetting(true);
-  };
-
-  // Save changes made while in EDIT MODE to the selected setting (overwrite)
-  const saveEditedSetting = () => {
-    if (!selectedSetting) {
-      alert("No setting selected to save.");
-      return;
-    }
-    // Overwrite selected saved item with current input values
-    const updated = settingsList.map((s) =>
-      s.id === Number(selectedSetting)
-        ? {
-            ...s,
-            startTime: startTime || "",
-            endTime: endTime || "",
-            feedLevel: feedLevel || "",
-            timeGap: Number(timeGap || 180),
-            dispatch: Number(dispatch || 250),
-            feedDuration: feedDuration || "",
-            value: startTime || s.value || "",
-          }
-        : s
-    );
-    setSettingsList(reindex(updated));
-    setIsEditing(false);
-    // keep selectedSetting so dropdown still highlights the item
-    alert("Saved changes to selected setting.");
-  };
-
-  // Cancel edit mode and revert inputs to saved setting values
-  const cancelEdit = () => {
-    if (!selectedSetting) {
       setIsEditing(false);
       return;
     }
+
     const s = settingsList.find((x) => x.id === Number(selectedSetting));
-    if (s) {
-      setStartTime(s.startTime ?? s.value ?? "");
-      setEndTime(s.endTime ?? "");
-      setFeedLevel(s.feedLevel ?? "");
-      setFeedDuration(s.feedDuration ?? "");
-      setTimeGap(Number(s.timeGap ?? 180));
-      setDispatch(Number(s.dispatch ?? 250));
+    if (!s) return;
+
+    setStartTime(s.startTime || s.value || "");
+    setEndTime(s.endTime || "");
+    setFeedLevel(s.feedLevel || "");
+    setFeedDuration(s.feedDuration || "");
+    setTimeGap(Number(s.timeGap || 180));
+    setDispatch(Number(s.dispatch || 250));
+  }, [selectedSetting, settingsList]);
+
+  // -----------------------
+  // UNIVERSAL VALIDATION
+  // -----------------------
+
+  const toMinutes = (t) => {
+    if (!t || !t.includes(":")) return null;
+    const [h, m] = t.split(":").map(Number);
+    return h * 60 + m;
+  };
+
+  // Check duplicate START TIME
+  const hasStartTimeDuplicate = (newStart, list, ignoreId = null) => {
+    return list.some(
+      (s) =>
+        s.startTime === newStart &&
+        (ignoreId === null || s.id !== ignoreId)
+    );
+  };
+
+  // Check exact same setting (all fields equal)
+  const isExactDuplicate = (newItem, list, ignoreId = null) => {
+    return list.some(
+      (s) =>
+        (ignoreId === null || s.id !== ignoreId) &&
+        s.startTime === newItem.startTime &&
+        String(s.feedLevel) === String(newItem.feedLevel) &&
+        Number(s.timeGap) === Number(newItem.timeGap) &&
+        Number(s.dispatch) === Number(newItem.dispatch)
+    );
+  };
+
+  // Check overlap
+  const hasOverlap = (newItem, list, ignoreId = null) => {
+    const newStart = toMinutes(newItem.startTime);
+    const newEnd = newStart + Math.floor(
+      ((newItem.feedLevel * 1000) / newItem.dispatch) *
+      newItem.timeGap / 60
+    );
+
+    return list.some((s) => {
+      if (ignoreId !== null && s.id === ignoreId) return false;
+
+      const start = toMinutes(s.startTime);
+      const end =
+        start +
+        Math.floor(((s.feedLevel * 1000) / s.dispatch) * s.timeGap / 60);
+
+      return newStart < end && newEnd > start;
+    });
+  };
+
+  // Main validator used everywhere
+  const validateSetting = (candidate, list, ignoreId = null) => {
+    if (!candidate.startTime) return "Start time is required.";
+
+    if (hasStartTimeDuplicate(candidate.startTime, list, ignoreId))
+      return "Another setting already uses this start time.";
+
+    if (isExactDuplicate(candidate, list, ignoreId))
+      return "This exact setting already exists.";
+
+    if (hasOverlap(candidate, list, ignoreId))
+      return "This setting overlaps with another setting.";
+
+    return null;
+  };
+
+// ===================== PART 1 END =====================
+// ===================== PART 2 START =====================
+
+// Add a new setting
+const addSetting = () => {
+  if (settingsList.length >= 10) {
+    showToast("error", "You can only add up to 10 settings.");
+    return;
+  }
+
+  if (isEditing) {
+    showToast("error", "Finish editing before adding a new setting.");
+    return;
+  }
+
+  if (!startTime) {
+    showToast("error", "Please enter a Start Time.");
+    return;
+  }
+
+  const candidate = {
+    startTime: startTime.trim(),
+    feedLevel: Number(feedLevel || 0),
+    timeGap: Number(timeGap || 180),
+    dispatch: Number(dispatch || 250),
+  };
+
+  // Validate with universal validator
+  const err = validateSetting(candidate, settingsList);
+  if (err) {
+    showToast("error", err);
+    return;
+  }
+
+  // Append
+  const newList = [
+    ...settingsList,
+    {
+      id: settingsList.length + 1,
+      label: `Setting ${settingsList.length + 1}`,
+      startTime: candidate.startTime,
+      endTime: "",
+      feedLevel: candidate.feedLevel,
+      timeGap: candidate.timeGap,
+      dispatch: candidate.dispatch,
+      feedDuration: feedDuration || "",
+      value: candidate.startTime
     }
+  ];
+
+  setSettingsList(reindex(newList));
+
+  // Clear UI
+  setSelectedSetting(null);
+  setStartTime("");
+  setEndTime("");
+  setFeedLevel("");
+  setFeedDuration("");
+
+  setShowMultiSetting(true);
+  showToast("success", "Setting added.");
+};
+
+
+// Save edited setting
+const saveEditedSetting = () => {
+  if (!selectedSetting) {
+    showToast("warning", "No setting selected to save.");
+    return;
+  }
+
+  const candidate = {
+    startTime: startTime.trim(),
+    feedLevel: Number(feedLevel || 0),
+    timeGap: Number(timeGap || 180),
+    dispatch: Number(dispatch || 250),
+  };
+
+  const err = validateSetting(candidate, settingsList, selectedSetting);
+  if (err) {
+    showToast("error", err);
+    return;
+  }
+
+  const updated = settingsList.map((s) =>
+    s.id === Number(selectedSetting)
+      ? {
+          ...s,
+          startTime: candidate.startTime,
+          endTime: endTime || "",
+          feedLevel: candidate.feedLevel,
+          timeGap: candidate.timeGap,
+          dispatch: candidate.dispatch,
+          feedDuration: feedDuration || "",
+          value: candidate.startTime,
+        }
+      : s
+  );
+
+  setSettingsList(reindex(updated));
+  setIsEditing(false);
+  showToast("success", "Changes saved.");
+};
+
+
+// Cancel editing
+const cancelEdit = () => {
+  if (!selectedSetting) {
     setIsEditing(false);
-  };
+    return;
+  }
 
-  // fetch settings from server
-  const fetchSettings = async () => {
-    try {
-      const res = await axios.get(`/api/controller/${id}/settings`);
-      const data = res.data;
-      let formatted = [];
+  const s = settingsList.find((x) => x.id === Number(selectedSetting));
+  if (s) {
+    setStartTime(s.startTime || s.value || "");
+    setEndTime(s.endTime || "");
+    setFeedLevel(s.feedLevel || "");
+    setFeedDuration(s.feedDuration || "");
+    setTimeGap(Number(s.timeGap || 180));
+    setDispatch(Number(s.dispatch || 250));
+  }
 
-      if (typeof data === "string" && data.startsWith("ACK")) {
-        const parts = data.split(",");
-        const times = parts[2]?.split("|") || [];
-        formatted = times.map((t, i) => ({
-          id: i + 1,
-          label: `Setting ${i + 1}`,
-          startTime: t.trim(),
-          endTime: "",
-          feedLevel: "",
-          feedDuration: "",
-          value: t.trim(),
-          timeGap: 180,
-          dispatch: 250,
-        }));
-      } else if (data?.items && Array.isArray(data.items)) {
-        formatted = data.items.map((t, i) => ({
-          id: i + 1,
-          label: `Setting ${i + 1}`,
-          startTime: t,
-          endTime: "",
-          feedLevel: "",
-          feedDuration: "",
-          value: t,
-          timeGap: 180,
-          dispatch: 250,
-        }));
-      } else if (Array.isArray(data)) {
-        formatted = data.map((t, i) => ({
-          id: i + 1,
-          label: `Setting ${i + 1}`,
-          startTime: t.startTime ?? t.value ?? "",
-          endTime: t.endTime ?? "",
-          feedLevel: t.feedLevel ?? "",
-          feedDuration: t.feedDuration ?? "",
-          value: t.value ?? t.startTime ?? "",
-          timeGap: t.timeGap ?? 180,
-          dispatch: t.dispatch ?? 250,
-        }));
-      } else if (typeof data === "object" && data !== null && data.items) {
-        formatted = data.items.map((t, i) => ({
-          id: i + 1,
-          label: `Setting ${i + 1}`,
-          startTime: t,
-          endTime: "",
-          feedLevel: "",
-          feedDuration: "",
-          value: t,
-          timeGap: 180,
-          dispatch: 250,
-        }));
-      }
+  setIsEditing(false);
+  showToast("info", "Edit cancelled.");
+};
 
-      setSettingsList(reindex(formatted));
-      setSelectedSetting(null); // do not auto-select
-    } catch (err) {
-      console.error("Failed to load settings", err);
+
+// Fetch settings from server
+const fetchSettings = async () => {
+  if (!id) return;
+
+  try {
+    const res = await axios.get(`/api/controller/${id}/settings`);
+    const data = res.data;
+    let formatted = [];
+
+    if (typeof data === "string" && data.startsWith("ACK")) {
+      const parts = data.split(",");
+      const times = parts[2]?.split("|") || [];
+      formatted = times.map((t, i) => ({
+        id: i + 1,
+        label: `Setting ${i + 1}`,
+        startTime: t.trim(),
+        endTime: "",
+        feedLevel: "",
+        feedDuration: "",
+        value: t.trim(),
+        timeGap: 180,
+        dispatch: 250,
+      }));
+    } else if (Array.isArray(data)) {
+      formatted = data.map((t, i) => ({
+        id: i + 1,
+        label: `Setting ${i + 1}`,
+        startTime: t.startTime || t.value || "",
+        endTime: t.endTime || "",
+        feedLevel: t.feedLevel || "",
+        feedDuration: t.feedDuration || "",
+        value: t.value || t.startTime || "",
+        timeGap: t.timeGap || 180,
+        dispatch: t.dispatch || 250,
+      }));
+    } else if (data?.items) {
+      formatted = data.items.map((t, i) => ({
+        id: i + 1,
+        label: `Setting ${i + 1}`,
+        startTime: t,
+        endTime: "",
+        feedLevel: "",
+        feedDuration: "",
+        value: t,
+        timeGap: 180,
+        dispatch: 250,
+      }));
     }
-  };
 
-  // clock updater
-  useEffect(() => {
-    const t = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(t);
-  }, []);
+    setSettingsList(reindex(formatted));
+    setSelectedSetting(null);
 
-  // calculations
-  const totalCycles = useMemo(() => {
-    const level = Number(feedLevel) || 0;
-    const disp = Number(dispatch) || 0;
-    if (!level || !disp) return 0;
-    return Math.floor((level * 1000) / disp);
-  }, [feedLevel, dispatch]);
+    showToast("success", "Settings loaded.");
+  } catch (err) {
+    console.error("Failed to load settings", err);
+    showToast("error", "Failed to load settings.");
+  }
+};
 
-  const totalRunningHours = useMemo(() => {
-    if (!totalCycles || !timeGap) return "0h 0m";
-    const totalSeconds = totalCycles * Number(timeGap);
+// ===================== PART 2 END =====================
+// ===================== PART 3 START =====================
+
+// Convert HH:MM → HHMM
+const toHHMM = (t) => (t ? t.replace(":", "").padStart(4, "0") : "0000");
+
+// Convert no-colon HHMM
+const toHHMMNoColon = (t) =>
+  t ? t.toString().replace(":", "").padStart(4, "0") : "0000";
+
+
+// Build single payload string
+const buildSinglePayloadString = () => {
+  const startHHMM = toHHMM(startTime);
+
+  const cycles = Number(totalCycles) || 0;
+  const gap = Number(timeGap) || 0;
+
+  let as3 = "0000";
+  if (cycles > 0 && gap > 0) {
+    const totalSeconds = cycles * gap;
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
-    return `${hours}h ${minutes}m`;
-  }, [totalCycles, timeGap]);
+    as3 = `${String(hours).padStart(2, "0")}${String(minutes).padStart(2, "0")}`;
+  }
 
-  // payload builders
-  const toHHMM = (t) => (t ? t.replace(":", "").padStart(4, "0") : "0000");
-  const toHHMMNoColon = (t) => (t ? t.toString().replace(":", "").padStart(4, "0") : "0000");
+  const as2 = String(Math.round(Number(feedLevel) || 0)).padStart(4, "0");
+  const as4 = String(Number(timeGap) || 180).padStart(4, "0");
+  const as9 = String(Number(dispatch) || 250).padStart(4, "0");
+  const as10 = String(Number(totalCycles) || 0).padStart(4, "0");
 
-  const buildSinglePayloadString = () => {
-    const startHHMM = toHHMM(startTime);
+  return `c0=212&as1=${startHHMM}&as2=${as2}&as3=${as3}&as4=${as4}&as9=${as9}&as10=${as10}`;
+};
 
-    const cycles = Number(totalCycles) || 0;
-    const gap = Number(timeGap) || 0;
 
-    let as3 = "0000";
-    if (cycles > 0 && gap > 0) {
+// Build MULTI payload string
+const buildMultiPayloadString = (list) => {
+  const as1 = list.map((s) => toHHMMNoColon(s.startTime)).join(":");
+
+  const as2 = list
+    .map((s) => String(Math.round(Number(s.feedLevel) || 0)).padStart(4, "0"))
+    .join(":");
+
+  const as3 = list
+    .map((s) => {
+      const feed = Number(s.feedLevel || 0);
+      const dispatchVal = Number(s.dispatch || 250);
+      const gap = Number(s.timeGap || 180);
+
+      const cycles = dispatchVal > 0 ? Math.floor((feed * 1000) / dispatchVal) : 0;
       const totalSeconds = cycles * gap;
+
+      if (totalSeconds <= 0) return "0000";
+
       const hours = Math.floor(totalSeconds / 3600);
       const minutes = Math.floor((totalSeconds % 3600) / 60);
-      as3 = `${String(hours).padStart(2, "0")}${String(minutes).padStart(2, "0")}`;
-    }
+      return `${String(hours).padStart(2, "0")}${String(minutes).padStart(2, "0")}`;
+    })
+    .join(":");
 
-    const as2 = String(Math.round(Number(feedLevel) || 0)).padStart(4, "0");
-    const as4 = String(Number(timeGap) || 180).padStart(4, "0");
-    const as9 = String(Number(dispatch) || 250).padStart(4, "0");
-    const as10 = String(Number(totalCycles) || 0).padStart(4, "0");
+  const as4 = list
+    .map((s) => String(Number(s.timeGap) || 180).padStart(4, "0"))
+    .join(":");
 
-    return `c0=212&as1=${startHHMM}&as2=${as2}&as3=${as3}&as4=${as4}&as9=${as9}&as10=${as10}`;
-  };
+  const as9 = list
+    .map((s) => String(Number(s.dispatch || 250)).padStart(4, "0"))
+    .join(":");
 
+  const as10 = list
+    .map((s) => {
+      const cycles = Math.floor(
+        (Number(s.feedLevel || 0) * 1000) / Number(s.dispatch || 250)
+      );
+      return String(cycles).padStart(4, "0");
+    })
+    .join(":");
 
-  const buildMultiPayloadString = (list) => {
-    const as1 = list.map((s) => toHHMMNoColon(s.startTime)).join(":");
-
-    const as2 = list
-      .map((s) => String(Math.round(Number(s.feedLevel) || 0)).padStart(4, "0"))
-      .join(":");
-
-    const as3 = list
-      .map((s) => {
-        const feed = Number(s.feedLevel || 0);
-        const dispatch = Number(s.dispatch || 250);
-        const gap = Number(s.timeGap || 180);
-
-        const cycles = dispatch > 0 ? Math.floor((feed * 1000) / dispatch) : 0;
-        const totalSeconds = cycles * gap;
-
-        if (totalSeconds <= 0) return "0000";
-
-        const hours = Math.floor(totalSeconds / 3600);
-        const minutes = Math.floor((totalSeconds % 3600) / 60);
-        return `${String(hours).padStart(2, "0")}${String(minutes).padStart(2, "0")}`;
-      })
-      .join(":");
-
-    const as4 = list
-      .map((s) => String(Number(s.timeGap) || 180).padStart(4, "0"))
-      .join(":");
-
-    const as9 = list
-      .map((s) => String(Number(s.dispatch || 250)).padStart(4, "0"))
-      .join(":");
-
-    const as10 = list
-      .map((s) => {
-        const cycles = Math.floor((Number(s.feedLevel || 0) * 1000) / Number(s.dispatch || 250));
-        return String(cycles).padStart(4, "0");
-      })
-      .join(":");
-
-    return `c0=212&as1=${as1}&as2=${as2}&as3=${as3}&as4=${as4}&as9=${as9}&as10=${as10}`;
-  };
+  return `c0=212&as1=${as1}&as2=${as2}&as3=${as3}&as4=${as4}&as9=${as9}&as10=${as10}`;
+};
 
 
-  // send SET to controller
-  const handleSet = async () => {
+// Send SET command to controller
+const [isLoading, setIsLoading] = useState(false);
+
+const handleSet = async () => {
   try {
-    // 1) Build payload from current settings
     const payload =
       settingsList.length > 0
         ? buildMultiPayloadString(settingsList)
@@ -1204,132 +503,212 @@ export default function Dashboard() {
 
     console.log("Sending payload:", payload);
 
-    // 2) Send command to backend
     const res = await api.post(`/controller/${id}/command`, { payload });
-
-    console.log("Command response:", res.data);
-
     const { ack, ack_payload } = res.data || {};
 
-    // 3) Check ACK status from backend
     if (ack === "received") {
-      // ✅ Backend saw a new row in controller_status for this controller
-      alert("Settings applied! ACK received from controller.");
+      showToast("success", "Settings applied! ACK received from controller.");
 
-      // (optional) if you want to inspect what the device replied:
-      if (ack_payload) {
-        console.log("ACK payload from device:", ack_payload);
-      }
+      if (ack_payload) console.log("ACK payload:", ack_payload);
 
-      // 4) Clear inputs & selection only on success
+      // Clear settings (as per Version B)
+      setSettingsList([]);
+
+      if (storageKey) localStorage.removeItem(storageKey);
+
       setStartTime("");
       setEndTime("");
       setFeedLevel("");
       setFeedDuration("");
+
       setSelectedSetting(null);
       setIsEditing(false);
       setShowMultiSetting(false);
     } else if (ack === "not_received") {
-      // ❌ No DB row appeared within 6 seconds
-      alert("Settings sent, but NO ACK from controller (timeout). Check device / MQTT.");
-      // keep UI as-is so user can retry
+      showToast("warning", "NO ACK from controller. Check device/MQTT.");
     } else {
-      // Unexpected / older backend response shape
-      alert("Settings sent, but got an unexpected response. Check console.");
+      showToast("info", "Unexpected response received.");
     }
   } catch (e) {
     console.error("Error sending settings:", e);
-    if (e.response) {
-      console.error("Backend error response:", e.response.data);
-    }
-    alert("Failed to send settings (network or server error).");
+    showToast("error", "Failed to send settings.");
   }
 };
 
 
-  // read previous settings from controller -> show manager
-  const handlePreviousSet = async () => {
+// Read PREVIOUS settings from controller
+const handlePreviousSet = async () => {
   try {
-    // ask controller to send previous settings
-    await api.post(`/controller/${id}/command`, { payload: "c0=202" });
+    const res = await api.get(`/controller/${id}/last-setting`);
+    const ack = res.data?.sent_settings || "";
 
-    // small delay so controller can respond
-    await new Promise((r) => setTimeout(r, 1500));
-
-    // read status from backend (which should include controller ACK)
-    const res = await api.get(`/controller/${id}/status`);
-
-    const ack = res.data?.ack_payload || res.data?.payload || "";
     setCurrentAck(ack);
 
-    // if no ACK, nothing from controller
+    // Parse controller DDMMYYHHMMSS format
+    function parseControllerTime(raw) {
+      if (!raw) return null;
+
+      const cleaned = String(raw).replace(/\D/g, "");
+
+      if (cleaned.length < 10) return null;
+
+      const day = parseInt(cleaned.slice(0, 2), 10);
+      const month = parseInt(cleaned.slice(2, 4), 10) - 1;
+      const year = 2000 + parseInt(cleaned.slice(4, 6), 10);
+      const hour = parseInt(cleaned.slice(6, 8), 10);
+      const min = parseInt(cleaned.slice(8, 10), 10);
+      const sec = cleaned.length >= 12 ? parseInt(cleaned.slice(10, 12), 10) : 0;
+
+      return new Date(year, month, day, hour, min, sec);
+    }
+
+    const rawDate = res.data?.set_time_raw;
+    const baseDateObj = parseControllerTime(rawDate) || new Date();
+
+    setLastSettingDate(baseDateObj);
+
+    const pad = (n) => n.toString().padStart(2, "0");
+    const baseDateStr = `${baseDateObj.getFullYear()}-${pad(
+      baseDateObj.getMonth() + 1
+    )}-${pad(baseDateObj.getDate())}`;
+
     if (!ack) {
-      alert("Controller did not return any settings.");
+      showToast("info", "No previous settings found.");
       return;
     }
 
+    // Parse ACK arrays
     const parts = ack.split("&");
     const as1 = parts.find((p) => p.startsWith("as1="))?.split("=")[1];
     const as2 = parts.find((p) => p.startsWith("as2="))?.split("=")[1];
     const as4 = parts.find((p) => p.startsWith("as4="))?.split("=")[1];
     const as9 = parts.find((p) => p.startsWith("as9="))?.split("=")[1];
 
-    if (!as1) {
-      alert("Controller ACK has no time settings (as1 missing).");
-      return;
-    }
-
     const splitList = (s) =>
       s.includes("|") ? s.split("|") : s.includes(":") ? s.split(":") : [s];
 
     const as1List = splitList(as1).map((t) => {
-      const cleaned = (t || "").replace(/[^0-9]/g, "");
+      const cleaned = (t || "").replace(/\D/g, "");
       return cleaned.length === 4
         ? `${cleaned.slice(0, 2)}:${cleaned.slice(2, 4)}`
         : cleaned;
     });
 
-    const as2List = as2 ? (as2.includes(":") ? as2.split(":") : [as2]) : [];
-    const as4List = as4 ? (as4.includes(":") ? as4.split(":") : [as4]) : [];
-    const as9List = as9 ? (as9.includes(":") ? as9.split(":") : [as9]) : [];
+    const as2List = as2 ? splitList(as2) : [];
+    const as4List = as4 ? splitList(as4) : [];
+    const as9List = as9 ? splitList(as9) : [];
 
-    const formatted = as1List.map((st, i) => ({
-      id: i + 1,
-      label: `Setting ${i + 1}`,
-      startTime: st,
-      endTime: "", // end will be auto-calculated on dashboard now
-      feedLevel: as2List[i] ? String(Number(as2List[i]) || 0) : "",
-      feedDuration: "",
-      timeGap: as4List[i] ? Number(as4List[i]) : 180,
-      dispatch: as9List[i] ? Number(as9List[i]) : 250,
-      value: st,
-    }));
+    const formatted = as1List.map((st, i) => {
+      let fullISO = null;
+
+      if (/^\d{1,2}:\d{2}$/.test(st)) {
+        const [hh, mm] = st.split(":").map((x) => x.padStart(2, "0"));
+        fullISO = `${baseDateStr}T${hh}:${mm}:00`;
+      }
+
+      return {
+        id: i + 1,
+        label: `Setting ${i + 1}`,
+        startTime: st,
+        fullStartISO: fullISO,
+        endTime: "",
+        feedLevel: as2List[i] ? String(Number(as2List[i]) || 0) : "",
+        feedDuration: "",
+        timeGap: as4List[i] ? Number(as4List[i]) : 180,
+        dispatch: as9List[i] ? Number(as9List[i]) : 250,
+        value: st,
+      };
+    });
 
     setSettingsList(reindex(formatted));
     setSelectedSetting(null);
     setShowMultiSetting(true);
+    showToast("success", "Previous settings loaded.");
   } catch (err) {
     console.error("Failed to fetch previous settings:", err);
-    alert("Could not fetch previous settings from controller.");
+    showToast("error", "Could not fetch previous settings.");
   }
 };
 
+// ===================== CALCULATIONS BLOCK (REQUIRED) =====================
 
-  // gauge math
-  const gaugeMaxKg = 2000;
-  const feedValueNumber = Number(feedLevel) || 0;
-  const feedPercent = Math.max(0, Math.min(100, (feedValueNumber / gaugeMaxKg) * 100));
-  const gaugeRadius = 90;
-  const gaugeCirc = Math.PI * gaugeRadius;
-  const gaugeOffset = (1 - feedPercent / 100) * gaugeCirc;
-  const needleAngle = -90 + (feedPercent / 100) * 180;
-  const formatClock = (d) =>
-    d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+// total cycles
+const totalCycles = useMemo(() => {
+  const level = Number(feedLevel) || 0;
+  const disp = Number(dispatch) || 0;
+  if (!level || !disp) return 0;
+  return Math.floor((level * 1000) / disp);
+}, [feedLevel, dispatch]);
 
-  return (
-    <div className="relative min-h-screen px-10">
+// total running hours
+const totalRunningHours = useMemo(() => {
+  if (!totalCycles || !timeGap) return "0h 0m";
+  const totalSeconds = totalCycles * Number(timeGap);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  return `${hours}h ${minutes}m`;
+}, [totalCycles, timeGap]);
+
+// ========================================================================
+
+
+// ===================== PART 3 END =====================
+// ===================== PART 4 START =====================
+
+// Gauge math
+const gaugeMaxKg = 2000;
+const feedValueNumber = Number(feedLevel) || 0;
+const feedPercent = Math.max(0, Math.min(100, (feedValueNumber / gaugeMaxKg) * 100));
+const gaugeRadius = 90;
+const gaugeCirc = Math.PI * gaugeRadius;
+const gaugeOffset = (1 - feedPercent / 100) * gaugeCirc;
+const needleAngle = -90 + (feedPercent / 100) * 180;
+
+// Clock formatter
+const formatClock = (d) =>
+  d.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+
+
+const updateCurrentSettingInSaved = (key, value) => {
+  if (!selectedSetting) return;
+
+  setSettingsList((prev) =>
+    prev.map((s) =>
+      s.id === Number(selectedSetting)
+        ? { ...s, [key]: value }
+        : s
+    )
+  );
+};
+
+
+
+// ===================== JSX START =====================
+
+return (
+    <div className="relative min-h-screen px-10 py-6">
       <div>
-        <TestController controllerId={id} />
+        <TestController controllerId={id} controllerName={name}/>
+      </div>
+            <div>
+        {showMultiSetting && (
+          <MultiSettingManager
+            settings={settingsList}
+            updateSettings={(newArr) => {
+              const re = reindex(newArr || []);
+              setSettingsList(re);
+              setSelectedSetting(null);
+              setIsEditing(false);
+              if (!re.length) setShowMultiSetting(false);
+            }}
+            onClose={() => setShowMultiSetting(false)}
+            lastSetting={lastSettingDate} // ⭐ pass controller time here
+          />
+        )}
       </div>
 
       <div className="relative z-10 flex justify-center px-6 py-6">
@@ -1340,15 +719,16 @@ export default function Dashboard() {
             <div className="flex items-center gap-3">
               <div>
                 <select
-                  className="w-full px-3 py-2 border rounded-md"
+                  className={`w-full px-3 py-2 border rounded-md ${blinkLoop ? "blink-loop" : ""}`}
                   value={selectedSettingStr}
                   onChange={(e) => {
-                    const idVal = e.target.value === "" ? null : Number(e.target.value);
+                    const idVal =
+                      e.target.value === "" ? null : Number(e.target.value);
                     setSelectedSetting(idVal);
                     setIsEditing(false); // disable edit whenever a new selection is made
                   }}
                 >
-                  <option value="">-- choose --</option>
+                  <option value="">-- New --</option>
                   {settingsList.map((s) => (
                     <option key={s.id} value={s.id}>
                       {s.label}
@@ -1357,34 +737,25 @@ export default function Dashboard() {
                 </select>
               </div>
 
-              <button
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-300 transition"
-                  onClick={async () => {
-                    setRefreshing(true);
-                    await handlePreviousSet();
-                    setRefreshing(false);
-                  }}
-                >
-                  <FiRefreshCcw
-                    size={18}
-                    className={refreshing ? "animate-spin" : ""}
-                  />
-                  Previous Setting
-                </button>
-
-
               {/* EDIT / SAVE / CANCEL controls */}
               <div className="flex items-center gap-2">
                 {/* Edit toggle */}
                 <button
                   onClick={() => {
                     if (!selectedSetting) {
-                      alert("Select a saved setting from dropdown to edit it.");
+                      showToast(
+                        "error",
+                        "Select a saved setting from dropdown to edit it."
+                      );
                       return;
                     }
                     setIsEditing(true);
                   }}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg ${isEditing ? "bg-gray-200 text-black" : "text-black hover:bg-orange-300"}`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
+                    isEditing
+                      ? "bg-gray-200 text-black"
+                      : "text-black hover:bg-orange-300"
+                  }`}
                   title="Edit selected saved setting"
                 >
                   <FiEdit size={18} />
@@ -1424,7 +795,9 @@ export default function Dashboard() {
           <div className="grid grid-cols-12 gap-4 items-center mb-6">
             <div className="col-span-12 md:col-span-3 p-3.5 bg-white/60 rounded-lg border border-white/40 flex flex-col gap-3 transition-transform hover:scale-[1.01]">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-gray-700">Start Time</label>
+                <label className="text-sm font-medium text-gray-700">
+                  Start Time
+                </label>
                 <div className="text-xs text-gray-500">Local</div>
               </div>
 
@@ -1436,8 +809,8 @@ export default function Dashboard() {
                     onChange={(e) => {
                       const val = e.target.value;
                       setStartTime(val);
-                      // only update saved when editing a selected setting
-                      if (isEditing && selectedSetting) updateCurrentSettingInSaved("startTime", val);
+                      if (isEditing && selectedSetting)
+                        updateCurrentSettingInSaved("startTime", val);
                     }}
                     className="px-3 py-2 rounded-md border w-40"
                     disabled={!!selectedSetting && !isEditing}
@@ -1449,7 +822,9 @@ export default function Dashboard() {
             {/* Feeding Level */}
             <div className="col-span-12 md:col-span-3 p-4 bg-white/60 rounded-lg border border-white/40 flex flex-col gap-3 transition-transform hover:scale-[1.01]">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-gray-700">Feeding Level (KG)</label>
+                <label className="text-sm font-medium text-gray-700">
+                  Feeding Level (KG)
+                </label>
               </div>
 
               <div className="flex gap-3 items-center ">
@@ -1461,7 +836,8 @@ export default function Dashboard() {
                   onChange={(e) => {
                     const val = e.target.value;
                     setFeedLevel(val);
-                    if (isEditing && selectedSetting) updateCurrentSettingInSaved("feedLevel", val);
+                    if (isEditing && selectedSetting)
+                      updateCurrentSettingInSaved("feedLevel", val);
                   }}
                   placeholder={`0 - ${gaugeMaxKg} KG`}
                   className="px-3 py-2 rounded-md border w-full"
@@ -1474,7 +850,9 @@ export default function Dashboard() {
             {/* Dispatch */}
             <div className="col-span-12 md:col-span-3 p-4 bg-white/60 rounded-lg border border-white/40 flex flex-col gap-3 transition-transform hover:scale-[1.01]">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-gray-700">Dispatch</label>
+                <label className="text-sm font-medium text-gray-700">
+                  Dispatch
+                </label>
                 <div className="text-xs text-gray-500">Grams</div>
               </div>
 
@@ -1484,7 +862,8 @@ export default function Dashboard() {
                 onChange={(e) => {
                   const val = Number(e.target.value);
                   setDispatch(val);
-                  if (isEditing && selectedSetting) updateCurrentSettingInSaved("dispatch", val);
+                  if (isEditing && selectedSetting)
+                    updateCurrentSettingInSaved("dispatch", val);
                 }}
                 disabled={!!selectedSetting && !isEditing}
               >
@@ -1493,10 +872,12 @@ export default function Dashboard() {
               </select>
             </div>
 
-            {/* Time Gap */}
+            {/* Time Gap */} 
             <div className="col-span-12 md:col-span-3 p-4 bg-white/60 rounded-lg border border-white/40 flex flex-col gap-3 transition-transform hover:scale-[1.01]">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-gray-700">Time Gap</label>
+                <label className="text-sm font-medium text-gray-700">
+                  Time Gap
+                </label>
                 <div className="text-xs text-gray-500">Interval</div>
               </div>
 
@@ -1505,7 +886,8 @@ export default function Dashboard() {
                 onChange={(e) => {
                   const val = Number(e.target.value);
                   setTimeGap(val);
-                  if (isEditing && selectedSetting) updateCurrentSettingInSaved("timeGap", val);
+                  if (isEditing && selectedSetting)
+                    updateCurrentSettingInSaved("timeGap", val);
                 }}
                 className="px-3 py-2 rounded-md border w-full"
                 disabled={!!selectedSetting && !isEditing}
@@ -1521,7 +903,9 @@ export default function Dashboard() {
           {/* Row 2 */}
           <div className="grid grid-cols-12 gap-3 items-center">
             <div className="col-span-12 md:col-span-3 p-4 bg-white/60 rounded-lg border border-white/40 flex flex-col gap-3 transition-transform hover:scale-[1.01]">
-              <label className="text-sm font-medium text-gray-700">Total Cycles</label>
+              <label className="text-sm font-medium text-gray-700">
+                Total Cycles
+              </label>
               <input
                 type="text"
                 readOnly
@@ -1568,7 +952,11 @@ export default function Dashboard() {
                       style={{ transition: "stroke-dashoffset 800ms ease" }}
                     />
 
-                    <g transform={`translate(${gaugeRadius + 10}, ${gaugeRadius + 10})`}>
+                    <g
+                      transform={`translate(${gaugeRadius + 10}, ${
+                        gaugeRadius + 10
+                      })`}
+                    >
                       <line
                         x1="0"
                         y1="0"
@@ -1596,13 +984,19 @@ export default function Dashboard() {
                 </div>
 
                 <div className="text-sm text-gray-600">Feeding Level</div>
-                <div className="text-lg font-semibold mt-2">{feedValueNumber} / {gaugeMaxKg} KG</div>
-                <div className="text-xs text-gray-500 mt-1">Animated semi-circle gauge</div>
+                <div className="text-lg font-semibold mt-2">
+                  {feedValueNumber} / {gaugeMaxKg} KG
+                </div>
+                <div className="text-xs text-gray-500 mt-1">
+                  Animated semi-circle gauge
+                </div>
               </div>
             </div>
 
             <div className="col-span-12 md:col-span-3 p-4 bg-white/60 rounded-lg border border-white/40 flex flex-col gap-3 transition-transform hover:scale-[1.01]">
-              <label className="text-sm font-medium text-gray-700">Total Running Hours</label>
+              <label className="text-sm font-medium text-gray-700">
+                Total Running Hours
+              </label>
 
               <input
                 type="text"
@@ -1611,7 +1005,9 @@ export default function Dashboard() {
                 className="px-3 py-2 rounded-md border bg-gray-100"
               />
 
-              <div className="text-xs text-gray-500">Based on cycle × time gap</div>
+              <div className="text-xs text-gray-500">
+                Based on cycle × time gap
+              </div>
               <div className="mt-auto">
                 <button
                   onClick={addSetting}
@@ -1623,35 +1019,35 @@ export default function Dashboard() {
 
                 <button
                   onClick={() => setShowMultiSetting(true)}
-                  className="w-full mt-3 bg-gray-200 text-black p-2 rounded-lg"
+                  className="w-full mt-3 py-3 bg-gray-200 text-black p-2 rounded-lg"
                 >
                   View Saved
+                </button>
+                <button
+                  className="flex items-center justify-center py-3 mt-3 gap-2 w-full rounded-lg text-black bg-blue-400 hover:bg-blue-300 transition"
+                  onClick={async () => {
+                    setRefreshing(true);
+                    await handlePreviousSet();
+                    setRefreshing(false);
+                  }}
+                >
+                  <FiRefreshCcw
+                    size={18}
+                    className={refreshing ? "animate-spin" : ""}
+                  />
+                  Current Setting
                 </button>
               </div>
             </div>
           </div>
 
-          <div className="mt-6 text-sm text-gray-500">
-            Tip: use the Run For unit selector to enter seconds/minutes/hours. Time Gap defaults to 180 seconds.
-          </div>
+          {/* <div className="mt-6 text-sm text-gray-500">
+            Tip: use the Run For unit selector to enter seconds/minutes/hours.
+            Time Gap defaults to 180 seconds.
+          </div> */}
         </div>
       </div>
 
-      <div>
-        {showMultiSetting && (
-          <MultiSettingManager
-            settings={settingsList}
-            updateSettings={(newArr) => {
-              const re = reindex(newArr || []);
-              setSettingsList(re);
-              setSelectedSetting(null);
-              setIsEditing(false);
-              if (!re.length) setShowMultiSetting(false);
-            }}
-            onClose={() => setShowMultiSetting(false)}
-          />
-        )}
-      </div>
     </div>
   );
 }

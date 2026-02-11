@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import logo from "../assets/logo/photonic.png"
-
+import logo from "../assets/logo/photonic.png";
+import Swal from "sweetalert2";
 
 export default function Login() {
   const [isActive, setIsActive] = useState(false);
@@ -10,6 +10,7 @@ export default function Login() {
 
   const [loginUser, setLoginUser] = useState("");
   const [loginPass, setLoginPass] = useState("");
+  const [loginError, setLoginError] = useState(""); // 👈 error message
 
   const [regUser, setRegUser] = useState("");
   const [regEmail, setRegEmail] = useState("");
@@ -17,63 +18,74 @@ export default function Login() {
 
   const navigate = useNavigate();
 
+  const { setUsername, setPassword } = useAuth();
 
-//   const handleLogin = (e) => {
-//     e.preventDefault();
-//     if (!loginUser.trim() || !loginPass.trim()) {
-//       alert("Enter username & password");
-//       return;
-//     }
-//     setLoggedInUser(loginUser.trim());
-//     navigate("/Dashboard");
-//   };
-
-const { setUsername, setPassword } = useAuth();
-    const handleLogin = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
+    setLoginError(""); // clear old error
 
+    // basic validation
     if (!loginUser.trim() || !loginPass.trim()) {
-        alert("Enter username & password");
-        return;
+      setLoginError("Enter username and password.");
+      return;
     }
 
     try {
-        const res = await fetch("http://127.0.0.1:8000/login", {
+      const res = await fetch("http://127.0.0.1:8000/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-            username: loginUser,
-            password: loginPass
+          username: loginUser,
+          password: loginPass,
         }),
-        });
+      });
 
-        const data = await res.json();
+      let data = null;
+      try {
+        data = await res.json();
+      } catch (_) {
+        data = null;
+      }
 
-        if (!res.ok) {
-        alert(data.detail || "Login failed");
+      if (!res.ok) {
+        // show FB-style inline message instead of alert
+        setLoginError("Username or password incorrect");
         return;
-        }
+      }
 
+      // success
+      Swal.fire({
+        icon: "success",
+        title: `Hello ${loginUser}`,
+        showConfirmButton: false,
+        timer: 1500,
+      });
 
+      if (data?.access_token) {
         localStorage.setItem("token", data.access_token);
+      }
 
-        // Save username + token
-        setUsername(loginUser.trim());
+      // 🔹 store username & password so Controller can use them after refresh
+      localStorage.setItem("username", loginUser.trim());
+      localStorage.setItem("password", loginPass.trim());
+      localStorage.setItem("token", data.access_token);
+      // localStorage.setItem("user", loginUser.trim());
+
+
+      // keep context in sync
+      setUsername(loginUser.trim());
       setPassword(loginPass.trim());
-      // (AuthContext automatically syncs to localStorage)
-
       setLoggedInUser(loginUser.trim());
-
-        setLoggedInUser(loginUser.trim());
-        // navigate("/Dashboard");
-        navigate("/Controller")
-
+      navigate("/Controller");
     } catch (err) {
-        alert("Backend not reachable");
+      console.error(err);
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Server not reachable. Please try again.",
+      });
     }
-    };
-
-
+  };
 
   const handleRegister = (e) => {
     e.preventDefault();
@@ -86,9 +98,20 @@ const { setUsername, setPassword } = useAuth();
   };
 
   const handleLogout = () => {
-    setLoggedInUser(null);
-    setLoginUser("");
-    setLoginPass("");
+    Swal.fire({
+      title: "Are you sure?",
+      text: "Do you really want to logout?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, Logout",
+      cancelButtonText: "Cancel",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        setLoggedInUser(null);
+        setLoginUser("");
+        setLoginPass("");
+      }
+    });
   };
 
   return (
@@ -99,8 +122,9 @@ const { setUsername, setPassword } = useAuth();
       {/* Logged-in welcome screen */}
       {loggedInUser ? (
         <div className="w-[400px] p-10 bg-white rounded-2xl shadow-xl text-center">
-
-          <h1 className="text-3xl font-semibold mb-3">Welcome, {loggedInUser} 👋</h1>
+          <h1 className="text-3xl font-semibold mb-3">
+            Welcome, {loggedInUser} 👋
+          </h1>
           <button
             onClick={handleLogout}
             className="mt-5 bg-[#01a0e2] text-white px-6 py-2 rounded-full hover:bg-[#4060d0] transition"
@@ -110,7 +134,6 @@ const { setUsername, setPassword } = useAuth();
         </div>
       ) : (
         <div className="relative w-[850px] h-[550px] bg-white rounded-[30px] shadow-[0_0_30px_rgba(0,0,0,0.2)] overflow-hidden">
-
           {/* BIG BLUE ANIMATION SHAPE */}
           <div
             className="absolute top-0 left-[-250%] w-[300%] h-full rounded-[150px] bg-[#01a0e2] z-20 transition-all duration-[1800ms] ease-in-out"
@@ -167,12 +190,27 @@ const { setUsername, setPassword } = useAuth();
               transform: isActive ? "translateX(120%)" : "translateX(0)",
             }}
           >
-            {/* <h1 className="text-[36px] font-semibold mb-5">Login</h1> */}
+            {/* Logo */}
             <div className="flex justify-center items-center w-full ">
               <img src={logo} alt="Photonic Logo" className="w-40 h-auto z-50" />
             </div>
 
+            {/* Error message bar */}
+            {loginError && (
+              <div className="w-full mt-4 mb-2 flex items-start justify-between gap-2 rounded-md border border-red-300 bg-red-50 px-3 py-2 text-xs text-red-700">
+                <span>{loginError}</span>
+                <button
+                  type="button"
+                  onClick={() => setLoginError("")}
+                  className="ml-2 text-red-500 hover:text-red-700 font-semibold leading-none"
+                >
+                  ×
+                </button>
+              </div>
+            )}
+
             <div className="w-full flex flex-col gap-4 mt-2">
+              {/* Username */}
               <div className="w-full bg-[#eee] rounded-full flex items-center px-5 py-2">
                 <i className="bx bxs-user text-[18px] mr-2"></i>
                 <input
@@ -180,10 +218,14 @@ const { setUsername, setPassword } = useAuth();
                   placeholder="Username"
                   className="bg-transparent outline-none w-full"
                   value={loginUser}
-                  onChange={(e) => setLoginUser(e.target.value)}
+                  onChange={(e) => {
+                    if (loginError) setLoginError("");
+                    setLoginUser(e.target.value);
+                  }}
                 />
               </div>
 
+              {/* Password */}
               <div className="w-full bg-[#eee] rounded-full flex items-center px-5 py-2">
                 <i className="bx bxs-lock-alt text-[18px] mr-2"></i>
                 <input
@@ -191,7 +233,10 @@ const { setUsername, setPassword } = useAuth();
                   placeholder="Password"
                   className="bg-transparent outline-none w-full"
                   value={loginPass}
-                  onChange={(e) => setLoginPass(e.target.value)}
+                  onChange={(e) => {
+                    if (loginError) setLoginError("");
+                    setLoginPass(e.target.value);
+                  }}
                 />
               </div>
             </div>
