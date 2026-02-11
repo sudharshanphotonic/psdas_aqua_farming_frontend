@@ -31,7 +31,7 @@ export default function Login() {
     }
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/login", {
+      const res = await fetch("https://psdas-aqua-farming.onrender.com/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -191,9 +191,23 @@ export default function Login() {
             }}
           >
             {/* Logo */}
-            <div className="flex justify-center items-center w-full ">
+            {/* <div className="flex justify-center items-center w-full ">
               <img src={logo} alt="Photonic Logo" className="w-40 h-auto z-50" />
+            </div> */}
+            {/* Logo + Title */}
+            <div className="flex flex-col items-center justify-center w-full">
+              <img
+                src={logo}
+                alt="PSDAS Logo"
+                className="w-32 sm:w-36 md:w-40 h-auto"
+              />
+
+              <h1 className="font-bold text-[#01a0e2] tracking-wide
+                            text-lg sm:text-xl md:text-2xl">
+                Aqua Farming
+              </h1>
             </div>
+
 
             {/* Error message bar */}
             {loginError && (

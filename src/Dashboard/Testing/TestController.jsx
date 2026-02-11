@@ -90,7 +90,7 @@ export default function TestController({ controllerId ,controllerName}) {
     // auto-poll
     const timer = setInterval(() => {
       pullStatus(controllerId);
-    }, 30000); // 12s for testing; use 120000 for 2 minutes
+    }, 12000); // 12s for testing; use 120000 for 2 minutes
 
     return () => clearInterval(timer);
   }, [controllerId]);
@@ -215,9 +215,9 @@ export default function TestController({ controllerId ,controllerName}) {
 
         {/* CENTER: BRAND NAME */}
         <div className="md:absolute md:left-1/2 md:-translate-x-1/2 text-center">
-          <h1 className="font-extrabold text-blue-600 tracking-wide
-                        text-3xl sm:text-4xl md:text-6xl lg:text-7xl">
-            PSDAS
+          <h1 className="font-bold text-blue-600 tracking-wide
+                        text-1xl sm:text-xl md:text-2xl lg:text-3xl">
+            PSDAS Aqua Farming
           </h1>
         </div>
 

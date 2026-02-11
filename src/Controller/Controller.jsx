@@ -113,11 +113,26 @@ export default function Controller() {
   return (
     <div className="relative min-h-screen font-poppins">
       {/* NAVBAR */}
-      <nav className="w-full py-5 bg-[#01a0e2] shadow-md">
+      <nav className="w-full py-2 bg-[#01a0e2] shadow-md ">
         <div className="flex flex-col sm:flex-row justify-between items-center px-6 sm:px-10 gap-4">
-          <div className="flex gap-2 items-center">
-            <img src={logo} alt="Logo" className="w-[100px]" />
-            <h1 className="font-bold text-xl sm:text-2xl lg:text-4xl text-white text-center sm:text-left leading-tight">
+
+          {/* LEFT SECTION */}
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+
+            {/* Logo + Title */}
+            <div className="flex flex-col items-center sm:items-start 
+                border-2 border-white 
+                rounded-2xl 
+                px-5 py-3 
+                bg-white/10">
+              <img src={logo} alt="Logo" className="w-[90px] sm:w-[100px]" />
+              <h2 className="text-white text-sm sm:text-base font-semibold mt-1 tracking-wide">
+                Aqua Farming
+              </h2>
+            </div>
+
+            {/* Welcome Text */}
+            <h1 className="font-bold text-lg sm:text-xl lg:text-2xl text-white text-center sm:text-left leading-tight">
               Welcome{" "}
               <span className="text-black">
                 {username || localStorage.getItem("username")}
@@ -125,6 +140,7 @@ export default function Controller() {
             </h1>
           </div>
 
+          {/* RIGHT SECTION */}
           <div className="flex items-center gap-3">
             <img
               src={profilephoto}
@@ -133,13 +149,15 @@ export default function Controller() {
             />
             <button
               onClick={handleLogout}
-              className="bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600"
+              className="bg-red-500 text-white px-4 py-2 rounded-full hover:bg-red-600 transition"
             >
               Logout
             </button>
           </div>
+
         </div>
       </nav>
+
 
       {/* MAIN */}
       <div className="p-4 sm:p-5 w-full max-w-[1400px] mx-auto">
